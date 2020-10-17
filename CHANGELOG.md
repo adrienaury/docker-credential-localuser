@@ -16,12 +16,7 @@ Types of changes
 
 ## [Unreleased]
 
-Nothing in the backlog !
-
-## [0.2.0]
-
 - `Added` AES Encryption with salt if environment variable `DOCKER_CREDENTIAL_MOCK_PASSWORD` has a value
-
-## [0.1.0]
-
 - `Added` Basic YAML credentials store in a file named `credentials.yaml` in the current directory
+- `Todo` Move `credentials.yaml` to the user home directory
+- `Todo` Rename `DOCKER_CREDENTIAL_MOCK_PASSWORD` to `DOCKER_CREDENTIAL_MAIN_PASSWORD` and make it mandatory
