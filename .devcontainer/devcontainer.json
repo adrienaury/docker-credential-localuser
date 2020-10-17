@@ -1,5 +1,5 @@
 {
-    "name": "docker-credential-mock",
+    "name": "docker-credential-localuser",
     "dockerComposeFile": ["docker-compose.yml"],
     "service": "vscode",
     "runServices": ["vscode"],
