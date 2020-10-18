@@ -15,62 +15,62 @@ import (
 )
 
 const (
-	masterPasswordEnvVarName    = "DOCKER_CREDENTIAL_MOCK_PASSWORD" // #nosec
+	masterPasswordEnvVarName    = "DOCKER_CREDENTIAL_MASTER_PASSWORD" // #nosec
 	keyDerivationIterationCount = 64000
 	keyByteLength               = 32
 	splitLength                 = 2
 )
 
-func encryptSecret(secret string) string {
-	masterPassword := os.Getenv(masterPasswordEnvVarName)
-	if masterPassword == "" {
-		return secret
+func encryptSecret(secret string) (string, error) {
+	masterPassword, err := retrievePassword()
+	if err != nil {
+		return secret, err
 	}
 
 	salt := make([]byte, 32)
-	_, err := rand.Read(salt)
+	_, err = rand.Read(salt)
 	if err != nil {
-		panic(err)
+		return secret, err
 	}
 
 	key := pbkdf2.Key([]byte(masterPassword), salt, keyDerivationIterationCount, keyByteLength, sha256.New)
 	ciphersecret, err := encrypt([]byte(secret), key)
 	if err != nil {
-		panic(err)
+		return secret, err
 	}
 
-	return base64.StdEncoding.EncodeToString(ciphersecret) + "." + base64.StdEncoding.EncodeToString(salt)
+	return base64.StdEncoding.EncodeToString(ciphersecret) + "." + base64.StdEncoding.EncodeToString(salt), nil
 }
 
-func decryptSecret(secret string) string {
-	masterPassword := os.Getenv(masterPasswordEnvVarName)
-	if masterPassword == "" {
-		return secret
+func decryptSecret(secret string) (string, error) {
+	masterPassword, err := retrievePassword()
+	if err != nil {
+		return secret, err
 	}
 
 	values := strings.Split(secret, ".")
 	if len(values) != splitLength {
-		return secret
+		return secret, ErrInvalidStorage.wrap(errors.New("unexpected format"))
 	}
 
 	ciphersecret, err := base64.StdEncoding.DecodeString(values[0])
 	if err != nil {
-		return secret
+		return secret, ErrInvalidStorage.wrap(err)
 	}
 
 	salt, err := base64.StdEncoding.DecodeString(values[1])
 	if err != nil {
-		return secret
+		return secret, ErrInvalidStorage.wrap(err)
 	}
 
 	key := pbkdf2.Key([]byte(masterPassword), salt, keyDerivationIterationCount, keyByteLength, sha256.New)
 
 	plaintext, err := decrypt(ciphersecret, key)
 	if err != nil {
-		return secret
+		return secret, ErrPermissionDenied.wrap(err)
 	}
 
-	return string(plaintext)
+	return string(plaintext), nil
 }
 
 func encrypt(plaintext []byte, key []byte) ([]byte, error) {
@@ -110,4 +110,12 @@ func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	return gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+func retrievePassword() (string, error) {
+	masterPassword := os.Getenv(masterPasswordEnvVarName)
+	if masterPassword == "" {
+		return "", ErrInvalidParameters.wrap(errors.New("master password is uninitialiazed"))
+	}
+	return masterPassword, nil
 }
