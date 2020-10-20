@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/adrienaury/docker-credential-mock/pkg/passwords"
+	"github.com/adrienaury/docker-credential-localuser/pkg/passwords"
 	"github.com/docker/docker-credential-helpers/credentials"
 )
 

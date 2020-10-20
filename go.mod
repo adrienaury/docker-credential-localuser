@@ -1,4 +1,4 @@
-module github.com/adrienaury/docker-credential-mock
+module github.com/adrienaury/docker-credential-localuser
 
 go 1.15
 

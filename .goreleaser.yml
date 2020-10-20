@@ -4,12 +4,12 @@ before:
   hooks:
     - go mod download
 builds:
-  - main: ./cmd/docker-credential-mock
+  - main: ./cmd/docker-credential-localuser
     goos:
       - darwin
       - linux
       - windows
-    binary: docker-credential-mock
+    binary: docker-credential-localuser
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}} -X main.builtBy=goreleaser
       - -X main.tag={{.Env.VERSION}} -X main.buildDate={{.Env.BUILD_DATE}}
