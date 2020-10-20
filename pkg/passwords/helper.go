@@ -4,13 +4,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/docker/docker-credential-helpers/credentials"
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v3"
 )
 
-// Version of the YAML strcuture.
-const Version string = "v1"
+const (
+	// Version of the YAML strcuture.
+	Version string = "v1"
+	// Path of the credentials storage file relative to the current user's home directory.
+	FilePath string = ".credentials"
+	// Name of the credentials storage file.
+	FileName string = "store.yaml"
+)
 
 type YAMLCredentialsStore struct {
 	Version         string            `yaml:"version"`
@@ -130,7 +138,14 @@ func readFile() (*YAMLCredentialsStore, error) {
 		Version: Version,
 	}
 
-	if _, err := os.Stat("credentials.yaml"); os.IsNotExist(err) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return nil, err
+	}
+
+	storeFile := path.Join(home, FileName)
+
+	if _, err := os.Stat(storeFile); os.IsNotExist(err) {
 		return store, nil
 	}
 
@@ -157,7 +172,24 @@ func writeFile(list *YAMLCredentialsStore) error {
 		return err
 	}
 
-	err = ioutil.WriteFile("credentials.yaml", out, 0600)
+	home, err := homedir.Dir()
+	if err != nil {
+		return err
+	}
+
+	storeDir := path.Join(home, FilePath)
+	if _, err2 := os.Stat(storeDir); os.IsNotExist(err2) {
+		err = os.MkdirAll(storeDir, 0700)
+		if err != nil {
+			return err
+		}
+	} else if err2 != nil {
+		return err2
+	}
+
+	storeFile := path.Join(storeDir, FileName)
+
+	err = ioutil.WriteFile(storeFile, out, 0600)
 	if err != nil {
 		return err
 	}
