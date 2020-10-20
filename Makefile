@@ -68,6 +68,7 @@ release: clean info lint $(patsubst cmd/%,release-%,$(wildcard cmd/*)) ## Build 
 
 .PHONY: publish
 publish:  ## Publish binaries
+	BUILD_DATE=${BUILD_DATE} VERSION=${VERSION} \
 	docker-compose \
 	  -f .devcontainer/docker-compose.yml \
 	  -p docker-credential-localuser_devcontainer \
