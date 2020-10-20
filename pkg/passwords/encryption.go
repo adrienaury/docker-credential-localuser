@@ -1,4 +1,4 @@
-package internal
+package passwords
 
 import (
 	"crypto/aes"
@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -50,7 +50,7 @@ func decryptSecret(secret string) (string, error) {
 
 	values := strings.Split(secret, ".")
 	if len(values) != splitLength {
-		return secret, ErrInvalidStorage.wrap(errors.New("unexpected format"))
+		return secret, fmt.Errorf("%w : unexpected format", ErrInvalidStorage)
 	}
 
 	ciphersecret, err := base64.StdEncoding.DecodeString(values[0])
@@ -105,7 +105,7 @@ func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
-		return nil, errors.New("ciphertext too short")
+		return nil, fmt.Errorf("%w : ciphertext too short", ErrInvalidParameters)
 	}
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
@@ -115,7 +115,7 @@ func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 func retrievePassword() (string, error) {
 	masterPassword := os.Getenv(masterPasswordEnvVarName)
 	if masterPassword == "" {
-		return "", ErrInvalidParameters.wrap(errors.New("master password is uninitialiazed"))
+		return "", fmt.Errorf("%w : master password environment variable is uninitialiazed", ErrMasterPassword)
 	}
 	return masterPassword, nil
 }

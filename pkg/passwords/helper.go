@@ -1,4 +1,4 @@
-package internal
+package passwords
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Version of the YAML strcuture
+// Version of the YAML strcuture.
 const Version string = "v1"
 
 type YAMLCredentialsStore struct {
@@ -145,7 +145,7 @@ func readFile() (*YAMLCredentialsStore, error) {
 	}
 
 	if store.Version != Version {
-		return nil, fmt.Errorf("invalid version in ./credentials.yaml (%s)", store.Version)
+		return nil, fmt.Errorf("%w : invalid storage version (%s)", ErrInvalidStorage, store.Version)
 	}
 
 	return store, nil

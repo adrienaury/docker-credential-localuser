@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/adrienaury/docker-credential-mock/internal"
+	"github.com/adrienaury/docker-credential-mock/pkg/passwords"
 	"github.com/docker/docker-credential-helpers/credentials"
 )
 
@@ -22,5 +22,5 @@ func main() {
 		fmt.Printf("%v (commit=%v date=%v by=%v)\n", version, commit, buildDate, builtBy)
 		os.Exit(0)
 	}
-	credentials.Serve(internal.YAMLStorage{})
+	credentials.Serve(passwords.YAMLStorage{})
 }
