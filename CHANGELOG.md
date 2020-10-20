@@ -18,6 +18,10 @@ Types of changes
 
 Nothing in the backlog !
 
+## [0.1.1]
+
+- `Fixed` Impossible to get password due to invalid storage file path.
+
 ## [0.1.0]
 
 - `Added` Passwords stored encrypted with master password (AES256 with salt) in `~/.credentials/store.yaml`.

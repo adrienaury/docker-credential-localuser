@@ -143,13 +143,13 @@ func readFile() (*YAMLCredentialsStore, error) {
 		return nil, err
 	}
 
-	storeFile := path.Join(home, FileName)
+	storeFile := path.Join(home, FilePath, FileName)
 
 	if _, err := os.Stat(storeFile); os.IsNotExist(err) {
 		return store, nil
 	}
 
-	dat, err := ioutil.ReadFile("credentials.yaml")
+	dat, err := ioutil.ReadFile(storeFile)
 	if err != nil {
 		return nil, err
 	}
