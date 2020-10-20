@@ -11,7 +11,7 @@ BUILD_BY ?= $(shell git config user.email)
 LDFLAGS += -X main.tag=${VERSION} -X main.commit=${COMMIT_HASH} -X main.buildDate=${BUILD_DATE} -X main.builtBy=${BUILD_BY}
 
 # Project variables
-DOCKER_IMAGE = adrienaury/docker-credential-mock
+DOCKER_IMAGE = adrienaury/docker-credential-localuser
 DOCKER_TAG ?= $(shell echo -n ${VERSION} | sed -e 's/[^A-Za-z0-9_\\.-]/_/g')
 RELEASE := $(shell [[ $(VERSION) =~ ^[0-9]*.[0-9]*.[0-9]*$$ ]] && echo 1 || echo 0 )
 MAJOR := $(shell echo $(VERSION) | cut -f1 -d.)
@@ -70,7 +70,7 @@ release: clean info lint $(patsubst cmd/%,release-%,$(wildcard cmd/*)) ## Build 
 publish:  ## Publish binaries
 	docker-compose \
 	  -f .devcontainer/docker-compose.yml \
-	  -p docker-credential-mock_devcontainer \
+	  -p docker-credential-localuser_devcontainer \
 	  run \
 	  -e BUILD_DATE \
 	  -e VERSION \
