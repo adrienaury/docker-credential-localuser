@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -33,7 +34,7 @@ func encryptSecret(secret string) (string, error) {
 		return secret, err
 	}
 
-	key := pbkdf2.Key([]byte(masterPassword), salt, keyDerivationIterationCount, keyByteLength, sha256.New)
+	key := pbkdf2.Key(masterPassword, salt, keyDerivationIterationCount, keyByteLength, sha256.New)
 	ciphersecret, err := encrypt([]byte(secret), key)
 	if err != nil {
 		return secret, err
@@ -63,7 +64,7 @@ func decryptSecret(secret string) (string, error) {
 		return secret, ErrInvalidStorage.wrap(err)
 	}
 
-	key := pbkdf2.Key([]byte(masterPassword), salt, keyDerivationIterationCount, keyByteLength, sha256.New)
+	key := pbkdf2.Key(masterPassword, salt, keyDerivationIterationCount, keyByteLength, sha256.New)
 
 	plaintext, err := decrypt(ciphersecret, key)
 	if err != nil {
@@ -112,10 +113,30 @@ func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	return gcm.Open(nil, nonce, ciphertext, nil)
 }
 
-func retrievePassword() (string, error) {
-	masterPassword := os.Getenv(masterPasswordEnvVarName)
-	if masterPassword == "" {
-		return "", fmt.Errorf("%w : master password environment variable is uninitialiazed", ErrMasterPassword)
+func retrievePassword() ([]byte, error) {
+	_, isMasterPasswordSet := os.LookupEnv(masterPasswordEnvVarName)
+	var masterPassword []byte
+	if !isMasterPasswordSet {
+		masterPassword = askPassword()
+	} else {
+		masterPassword = []byte(os.Getenv(masterPasswordEnvVarName))
+	}
+	if masterPassword == nil {
+		return nil, fmt.Errorf("%w : master password environment variable is uninitialiazed", ErrMasterPassword)
 	}
 	return masterPassword, nil
+}
+
+func askPassword() []byte {
+	if terminal.IsTerminal(int(os.Stdin.Fd())) {
+		fmt.Fprintf(os.Stdout, "enter master password: ")
+		bytePassword, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Fprintln(os.Stdout)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return bytePassword
+	}
+	return nil
 }
