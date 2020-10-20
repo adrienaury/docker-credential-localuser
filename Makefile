@@ -69,8 +69,9 @@ release: clean info lint $(patsubst cmd/%,release-%,$(wildcard cmd/*)) ## Build 
 .PHONY: publish
 publish:  ## Publish binaries
 	docker-compose \
-	  -e BUILD_DATE \
-	  -e VERSION \
 	  -f .devcontainer/docker-compose.yml \
 	  -p docker-credential-mock_devcontainer \
-	  run goreleaser --rm-dist release
+	  run \
+	  -e BUILD_DATE \
+	  -e VERSION \
+	  goreleaser --rm-dist release
